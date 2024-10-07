@@ -1,9 +1,14 @@
+import React, { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Card, CardContent, Typography, Grid } from '@mui/material';
 
-import './App.css';
-import Dashboard from './Dashboard';
-import ProgressBar from './ProgressBar';
+const Dashboard = () => {
+  const [data, setData] = useState([]);
 
-const csvData = `User Name,User Email,Google Cloud Skills Boost Profile URL,Profile URL Status,Access Code Redemption Status,All Skill Badges & Games Completed,# of Skill Badges Completed,Names of Completed Skill Badges,# of Arcade Games Completed,Names of Completed Arcade Games
+  useEffect(() => {
+    // In a real application, you would fetch the CSV data here
+    // For this example, we'll use the data directly
+    const csvData = `User Name,User Email,Google Cloud Skills Boost Profile URL,Profile URL Status,Access Code Redemption Status,All Skill Badges & Games Completed,# of Skill Badges Completed,Names of Completed Skill Badges,# of Arcade Games Completed,Names of Completed Arcade Games
 "PENIKELAPATI TEJ PAVAN","tejpavan.cloud@gmail.com","https://www.cloudskillsboost.google/public_profiles/fa06098d-8660-447a-8f4b-bed89a603933","All Good","Yes","No",0,"",0,""
 "VAJJIPARTI SATWIK RAJ","satwikrajv1@gmail.com","https://www.cloudskillsboost.google/public_profiles/0471df74-79f3-4bf2-b8e8-3091b95ffc73","All Good","Yes","No",0,"",0,""
 "Janvika Nakka","janvika371@gmail.com","https://www.cloudskillsboost.google/public_profiles/d2b7a32b-7f6b-4bcd-b32f-3963bcb7a315","All Good","Yes","No",0,"",0,""
@@ -136,23 +141,124 @@ const csvData = `User Name,User Email,Google Cloud Skills Boost Profile URL,Prof
 "Siri","siri04062005@gmail.com","https://www.cloudskillsboost.google/public_profiles/f03ba18b-1d9e-4ded-b43b-83b6773fd278","All Good","No","No",0,"",0,""
 "Rishitha Burra","rishithaburra2@gmail.com","https://www.cloudskillsboost.google/public_profiles/4e827994-54fd-43c3-bb9a-cc88bb0cbe4b","All Good","No","No",0,"",0,""
 "Amulya","amulya.mlrit@gmail.com","https://www.cloudskillsboost.google/public_profiles/7a4cb33f-f4a9-449e-a4d0-0e77d771a347","All Good","No","No",0,"",0,""`;
-function App() {
+
+    const parsedData = csvData.split('\n').slice(1).map(row => {
+      const columns = row.split(',');
+      return {
+        name: columns[0].replace(/"/g, ''),
+        email: columns[1].replace(/"/g, ''),
+        profileStatus: columns[3].replace(/"/g, ''),
+        redemptionStatus: columns[4].replace(/"/g, ''),
+        skillBadgesCompleted: parseInt(columns[6]),
+        arcadeGamesCompleted: parseInt(columns[8])
+      };
+    });
+
+    setData(parsedData);
+  }, []);
+
+  const totalParticipants = data.length;
+  const completedRedemption = data.filter(item => item.redemptionStatus === 'Yes').length;
+  const totalSkillBadges = data.reduce((sum, item) => sum + item.skillBadgesCompleted, 0);
+  const totalArcadeGames = data.reduce((sum, item) => sum + item.arcadeGamesCompleted, 0);
+
+  const chartData = [
+    { name: 'Skill Badges', count: totalSkillBadges },
+    { name: 'Arcade Games', count: totalArcadeGames },
+  ];
+
   return (
-    <div className="App">
-      <div className="App">
-      <header className="App-header">
-        <h1>MLR Institute of Technology - GDGC Gen AI Study Jam</h1>
-      </header>
-      <main>
-      <ProgressBar csvData={csvData} />
-        <Dashboard />
-        
-      </main>
-      
-    </div>
-    
+    <div style={{ padding: '20px' }}>
+      <Typography
+  variant="h4"
+  gutterBottom
+  style={{
+    background: 'linear-gradient(90deg, #4285F4 33.33%, #DB4437 33.33%, #DB4437 66.66%, #F4B400 66.66%, #F4B400 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+  }}
+>
+  Gen AI Study Jam Progress Dashboard
+</Typography>
+
+      <Grid container spacing={3} style={{ marginBottom: '20px' }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography color="textSecondary" gutterBottom>Total Participants</Typography>
+              <Typography variant="h5">{totalParticipants}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography color="textSecondary" gutterBottom>Completed Redemption</Typography>
+              <Typography variant="h5">{completedRedemption}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography color="textSecondary" gutterBottom>Total Skill Badges</Typography>
+              <Typography variant="h5">{totalSkillBadges}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography color="textSecondary" gutterBottom>Total Arcade Games</Typography>
+              <Typography variant="h5">{totalArcadeGames}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      <Typography variant="h5" gutterBottom>Completion Statistics</Typography>
+      <div style={{ height: '300px', marginBottom: '20px' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="count" fill="#1A73E8" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <Typography variant="h5" gutterBottom>Participant Details</Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Profile Status</TableCell>
+              <TableCell>Redemption Status</TableCell>
+              <TableCell>Skill Badges</TableCell>
+              <TableCell>Arcade Games</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((item, index) => (
+              <TableRow key={index}>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.email}</TableCell>
+                <TableCell>{item.profileStatus}</TableCell>
+                <TableCell>{item.redemptionStatus}</TableCell>
+                <TableCell>{item.skillBadgesCompleted}</TableCell>
+                <TableCell>{item.arcadeGamesCompleted}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
-}
+};
 
-export default App;
+export default Dashboard;
